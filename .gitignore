@@ -1,0 +1,5 @@
+* - copy*
+*.exe
+key*
+*.idea*
+vufix.js

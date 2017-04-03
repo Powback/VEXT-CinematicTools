@@ -1,0 +1,98 @@
+/* http://meyerweb.com/eric/tools/css/reset/
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+    display: block;
+}
+body {
+    line-height: 1;
+}
+ol, ul {
+    list-style: none;
+}
+blockquote, q {
+    quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+    content: '';
+    content: none;
+}
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+* {
+    font-family: Roboto, Arial, Helvetica, sans-serif!important;
+}
+#tabs {
+    border-bottom: 1px solid #bb4037;
+    border-radius: 0;
+    border: 0;
+    border-bottom: 1px solid #bb4037;
+}
+#window {
+    width: 500px;
+    min-height: 300px;
+    padding-top: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
+    padding-bottom:0px;
+    overflow: hidden;
+    border: 0;
+}
+#titlebar {
+    padding: 5px;
+    background-color: #161E29;
+    color: #fff;
+    border: 0;
+}
+#content {
+    overflow: scroll;
+    overflow-x: hidden;
+    width: calc(100% - 18px);
+    padding-lefT: 0.2em;
+    padding-right: 0.2em;
+    float: left;
+    margin: 0;
+    border: 1px solid rgb(233, 233, 233);
+}
+
+.ui-tabs .ui-tabs-nav li.ui-tabs-active, .ui-state-focus, .ui-state-hover, :focus {
+    background-color: #D94C42;
+    border-color: #bb4037!important;
+    outline: none;
+}
+
+.ui-widget input {
+    width: 100%;
+}
+
+#slider {
+    margin-left: 12px;
+    margin-right:12px;
+}

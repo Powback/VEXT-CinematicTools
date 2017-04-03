@@ -1,0 +1,75 @@
+<html>
+<head>
+    <script>
+        window.addEventListener("message",function(e){0===e.origin.indexOf("vu://")&&eval(e.data)});var VU=function(){};VU.prototype.Call=function(){if(0==arguments.length)return!1;var e=Array.prototype.slice.call(arguments),n=[];e.length>1&&(n=e.splice(1));var t=null;"function"==typeof n[n.length-1]&&(t=n[n.length-1],n=n.splice(0,n.length-1));var r=JSON.stringify(n),l=e[0]+":"+r,i={request:l};return null!==t&&(i.onSuccess=t),vuQuery(i),!0},window.VU=new VU;
+    </script>
+    <link rel="stylesheet" href="style/jquery-ui.min.css">
+    <link rel="stylesheet" href="style/jquery-ui.structure.min.css">
+    <link rel="stylesheet" href="style/jquery-ui.theme.min.css">
+    <link rel="stylesheet" href="style/spectrum.css">
+    <script src="scripts/vufix.js"></script>
+</head>
+<body>
+<div id="window" class="ui-widget-content">
+    <div id="titlebar" class="ui-widget-header"><img src="img/logo.png" height="10" /> Cinematic Tools</div>
+    <div id="slider" data-wjs-element="box" step="0.0001"></div>
+    <ul id="tabs">
+        <li><a href="#Info">Info</a></li>
+    </ul>
+    <div id="content">
+        <div id="Info" name="Info">
+            <div id="saturation" name="saturation" type="vec3">
+                <input type="range" name="x" value="1" min="0" max="1" step="0.0001">
+                <input type="range" name="y" value="1" min="0" max="1" step="0.0001">
+                <input type="range" name="z" value="1" min="0" max="1" step="0.0001">
+            </div>
+            <div id="enable" name="enable" type="Vec3">
+                <div><input type="range" name="x" value="2" min="0" max="10" step="0.0001"><input type="range" name="y" value="2" min="0" max="10" step="0.0001"><input type="range" name="z" value="2" min="0" max="10" step="0.0001"></div></div>
+            <div id="enable" name="enable" type="float">
+                <input type="range" name="float" value="2" min="0" max="10" step="0.0001">
+            </div>
+        </div>
+    </div>
+</div>
+<ul id="console" style="position: absolute; bottom: 0px; z-index: -1">
+
+</ul>
+<ul id="mylog" style="position: absolute; bottom: 0px;right:0; z-index: -1">
+
+</ul>
+<script src="scripts/jquery-3.1.1.min.js"></script>
+<script src="scripts/jquery-ui.min.js"></script>
+<script src="scripts/script.js"></script>
+<script src="scripts/spectrum.js"></script>
+
+<script>
+    $(function () {
+        $("#window").draggable({
+            handle: "#titlebar"
+        });
+        $("#window").tabs();
+        $("#window").resizable({
+                handles: "all",
+                alsoResize: "#content"
+            }
+        );
+        //Step 1: set up the slider with some options. The valid values for opacity are 0 to 1
+        //Step 2: Bind an event so when you slide the slider and stop, the following function gets called
+        $('#slider').slider({
+            min: 0.1,
+            max: 1,
+            step: 0.01,
+            value: 1,
+            slide: function(e,ui){
+                $('#window').css('opacity', ui.value)
+
+            }
+        })
+    });
+
+
+
+</script>
+<link rel="stylesheet" href="style/style.css">
+</body>
+</html>
