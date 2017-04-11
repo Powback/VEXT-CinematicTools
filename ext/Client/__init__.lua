@@ -1,7 +1,5 @@
 class 'CinematicToolsClient'
 
-local Patches = require 'Default'
-
 function CinematicToolsClient:__init()
 
 	print("Initializing CinematicToolsClient")
@@ -348,7 +346,7 @@ local s_CharacterLighting = p_State.characterLighting
 
 	local s_Dof = p_State.dof
 
-	if s_CameraParams ~= nil then
+	if s_Dof ~= nil then
 		self:SendDefault("dof","enable","bool", s_Dof.enable)
 		self:SendDefault("dof","nearDistanceScale","float", s_Dof.nearDistanceScale,0,100)
 		self:SendDefault("dof","focusDistance","float", s_Dof.focusDistance,0,100)

@@ -3,3 +3,4 @@
 key*
 *.idea*
 vufix.js
+.gitignore
