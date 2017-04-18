@@ -5,11 +5,11 @@ function CinematicToolsClient:__init()
 	print("Initializing CinematicToolsClient")
 	self:RegisterVars()
 	self:RegisterEvents()
-
 end
 function CinematicToolsClient:RegisterVars()
 	self.m_CursorMode = false
 	self.m_Variables = {}
+
 end
 
 function CinematicToolsClient:RegisterEvents()
@@ -25,7 +25,10 @@ function CinematicToolsClient:RegisterEvents()
 
 
     self.m_OnWebUIUpdateEvent = Events:Subscribe('CT:UpdateValue', self, self.OnUpdateValue)
+
+
 end
+
 function CinematicToolsClient:OnUpdateValue(p_Contents)
 	
 	WebUI:ExecuteJS(string.format('Debug("Server got data: %s")', p_Contents))
@@ -131,17 +134,17 @@ end
 
 function CinematicToolsClient:OnUpdateInput(p_Delta)
     
-    if InputManager:WentKeyDown(InputDeviceKeys.IDK_1) then
+    if InputManager:WentKeyDown(InputDeviceKeys.IDK_F1) then
         WebUI:ExecuteJS('document.location.reload()')
     end
 
-    if InputManager:WentKeyDown(InputDeviceKeys.IDK_2) then
+    if InputManager:WentKeyDown(InputDeviceKeys.IDK_F2) then
         WebUI:BringToFront()
         WebUI:EnableMouse()
         WebUI:Show()
     end
 
-    if InputManager:WentKeyDown(InputDeviceKeys.IDK_3) then
+    if InputManager:WentKeyDown(InputDeviceKeys.IDK_F3) then
         --WebUI:BringToFront()
         WebUI:DisableMouse()
         WebUI:Hide()
@@ -262,7 +265,7 @@ function CinematicToolsClient:FixEnvironmentState(p_State)
 		self:SendDefault("outdoorLight","cloudShadowSize", "float", s_OutdoorLight.cloudShadowSize, 0, 4000)
 		self:SendDefault("outdoorLight","cloudShadowSpeed", "Vec2", s_OutdoorLight.cloudShadowSpeed)
 		--self:SendDefault("outdoorLight","cloudShadowTexture", "CtrRef", s_OutdoorLight.cloudShadowTexture)
-		self:SendDefault("outdoorLight","groundColor", "Vec3", s_OutdoorLight.groundColor, 0, 1)
+		self:SendDefault("outdoorLight","groundColor", "Vec3", s_OutdoorLight.groundColor, 0, 255)
 		--self:SendDefault("outdoorLight","realm", "Realm", s_OutdoorLight.realm)
 		self:SendDefault("outdoorLight","skyColor", "Vec3", s_OutdoorLight.skyColor, 0, 1)
 		self:SendDefault("outdoorLight","skyEnvmapShadowScale", "float", s_OutdoorLight.skyEnvmapShadowScale, 0, 1)
@@ -315,13 +318,13 @@ local s_CharacterLighting = p_State.characterLighting
 		self:SendDefault("characterLighting","firstPersonEnable","bool", s_CharacterLighting.firstPersonEnable)
 		self:SendDefault("characterLighting","lockToCameraDirection","bool", s_CharacterLighting.lockToCameraDirection)
 		self:SendDefault("characterLighting","characterLightEnable","bool", s_CharacterLighting.characterLightEnable)
-		self:SendDefault("characterLighting","CameraUpRotation","float", s_CharacterLighting.characterLightEnable, 0, 180)
+		self:SendDefault("characterLighting","cameraUpRotation","float", s_CharacterLighting.characterLightEnable, 0, 180)
 		--self:SendDefault("characterLighting","CharacterLightingMode","float", s_CharacterLighting.CharacterLightingMode)
-		self:SendDefault("characterLighting","BlendFactor","float", s_CharacterLighting.blendFactor, 0, 10)
-		self:SendDefault("characterLighting","TopLight","Vec3", s_CharacterLighting.topLight,0,1)
-		self:SendDefault("characterLighting","BottomLight","Vec3", s_CharacterLighting.bottomLight,0,1)
-		self:SendDefault("characterLighting","TopLightDirX","float", s_CharacterLighting.topLightDirX,0,180)
-		self:SendDefault("characterLighting","TopLightDirY","float", s_CharacterLighting.topLightDirY,0,180)
+		self:SendDefault("characterLighting","blendFactor","float", s_CharacterLighting.blendFactor, 0, 10)
+		self:SendDefault("characterLighting","topLight","Vec3", s_CharacterLighting.topLight,0,1)
+		self:SendDefault("characterLighting","bottomLight","Vec3", s_CharacterLighting.bottomLight,0,1)
+		self:SendDefault("characterLighting","topLightDirX","float", s_CharacterLighting.topLightDirX,0,180)
+		self:SendDefault("characterLighting","topLightDirY","float", s_CharacterLighting.topLightDirY,0,180)
 	end
 
 
@@ -364,8 +367,8 @@ local s_CharacterLighting = p_State.characterLighting
 
 	if s_Wind ~= nil then
 		s_Wind.windStrength = SharedUtils:GetRandom(0,10)
-		self:SendDefault("wind","windStrength","float", s_Wind.windStrength, 0, 100)
-		self:SendDefault("wind","WindDirection","float", s_Wind.WindDirection, 0, 360)
+		self:SendDefault("wind","windStrength","float", s_Wind.windStrength, 0, 10000)
+		self:SendDefault("wind","windDirection","float", s_Wind.WindDirection, 0, 360000)
 	end
 
 	local s_Vignette = p_State.vignette
@@ -399,17 +402,15 @@ local s_CharacterLighting = p_State.characterLighting
 	end
 	
 
-	--[[
-	
-
-
+--[[
 	local s_TonemapData = p_State.tonemap
 
 	if s_TonemapData ~= nil then
-		s_TonemapData.bloomScale = Vec3(0, 0, 0)
-		s_TonemapData.minExposure =0.1
-		s_TonemapData.middleGray = 0.4
-		s_TonemapData.maxExposure = 1.5
+		--s_TonemapData.bloomScale = Vec3(0, 0, 0)
+		--s_TonemapData.minExposure =0.1
+		--s_TonemapData.middleGray = 0.4
+		--s_TonemapData.maxExposure = 1.5
+
 	end
 
 
