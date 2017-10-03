@@ -1,8 +1,11 @@
 <html>
 <head>
     <script>
-        window.addEventListener("message",function(e){0===e.origin.indexOf("vu://")&&eval(e.data)});var VU=function(){};VU.prototype.Call=function(){if(0==arguments.length)return!1;var e=Array.prototype.slice.call(arguments),n=[];e.length>1&&(n=e.splice(1));var t=null;"function"==typeof n[n.length-1]&&(t=n[n.length-1],n=n.splice(0,n.length-1));var r=JSON.stringify(n),l=e[0]+":"+r,i={request:l};return null!==t&&(i.onSuccess=t),vuQuery(i),!0},window.VU=new VU;
+        window.addEventListener("message",function(e){0===e.origin.indexOf("vu://")&&eval(e.data)});var VU=function(){};VU.Call=function(){if(0==arguments.length)return!1;var e=Array.prototype.slice.call(arguments),n=[];e.length>1&&(n=e.splice(1));var t=null;"function"==typeof n[n.length-1]&&(t=n[n.length-1],n=n.splice(0,n.length-1));var r=JSON.stringify(n),l=e[0]+":"+r,i={request:l};return null!==t&&(i.onSuccess=t),vuQuery(i),!0},window.VU=new VU;
+    
+    document.domain = "main";
     </script>
+
     <link rel="stylesheet" href="style/jquery-ui.min.css">
     <link rel="stylesheet" href="style/jquery-ui.structure.min.css">
     <link rel="stylesheet" href="style/jquery-ui.theme.min.css">

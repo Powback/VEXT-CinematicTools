@@ -13,7 +13,7 @@ function CinematicToolsClient:RegisterVars()
 end
 
 function CinematicToolsClient:RegisterEvents()
-	self.m_EnableCursorModeHook = Hooks:Install('UI:EnableCursorMode', self, self.OnEnableCursorMode)
+	self.m_EnableCursorModeHook = Hooks:Install('UI:EnableCursorMode',999, self, self.OnEnableCursorMode)
 	
 	self.m_StateAddedEvent = Events:Subscribe('VE:StateAdded', self, self.OnStateAdded)
 	self.m_StateRemovedEvent = Events:Subscribe('VE:StateRemoved', self, self.OnStateRemoved)
@@ -135,7 +135,7 @@ end
 function CinematicToolsClient:OnUpdateInput(p_Delta)
     
     if InputManager:WentKeyDown(InputDeviceKeys.IDK_F1) then
-        WebUI:ExecuteJS('document.location.reload()')
+       -- WebUI:ExecuteJS('document.location.reload()')
     end
 
     if InputManager:WentKeyDown(InputDeviceKeys.IDK_F2) then
@@ -155,7 +155,6 @@ function CinematicToolsClient:OnEnableCursorMode(p_Hook, p_Enable, p_Cursor)
     -- Here we store the current cursor mode as requested by the
     -- engine in order to restore it later on.
     self.m_CursorMode = p_Enable
-    p_Hook:CallOriginal(p_Enable, p_Cursor)
 end
 
 function CinematicToolsClient:OnStateAdded(p_State)
@@ -195,7 +194,6 @@ end
 
 function CinematicToolsClient:FixEnvironmentState(p_State)
 	print('Fixing visual environment state ' .. p_State.entityName)
-	print(tostring(p_State))
 	if s_CameraParams ~= nil then
 		self:SendDefault("camera","nearPlane","float", s_CameraParams.nearPlane,0,10)
 		self:SendDefault("camera","viewDistance","float", s_CameraParams.nearPlane,0,100000000)
@@ -393,16 +391,28 @@ local s_CharacterLighting = p_State.characterLighting
 
 
 
-	local s_DynamicEnvmap = p_State.dynamicEnvmap
+	--local s_DynamicEnvmap = p_State.dynamicEnvmap
 
-	if s_DynamicEnvmap ~= nil then
-		self:SendDefault("dynamicEnvmap","groundColorEnvmap","Vec3", s_DynamicEnvmap.groundColorEnvmap, 0, 1)
-		self:SendDefault("dynamicEnvmap","keyColorEnvmap","Vec3", s_DynamicEnvmap.keyColorEnvmap, 0, 1)
-		self:SendDefault("dynamicEnvmap","skyColorEnvmap","Vec3", s_DynamicEnvmap.skyColorEnvmap, 0, 1)
-	end
-	
-
+	--if s_DynamicEnvmap ~= nil then
+	--	self:SendDefault("dynamicEnvmap","groundColorEnvmap","Vec3", s_DynamicEnvmap.groundColorEnvmap, 0, 1)
+	--	self:SendDefault("dynamicEnvmap","keyColorEnvmap","Vec3", s_DynamicEnvmap.keyColorEnvmap, 0, 1)
+	--	self:SendDefault("dynamicEnvmap","skyColorEnvmap","Vec3", s_DynamicEnvmap.skyColorEnvmap, 0, 1)
+	--end
 --[[
+	local s_TonemapData = p_State.tonemap
+	if s_TonemapData ~= nil then
+		self:SendDefault("tonemap", "bloomScale", "Vec3", s_Instance.bloomScale, 0, 1)
+		self:SendDefault("tonemap", "chromostereopsisEnable", "bool", s_Instance.chromostereopsisEnable)
+		self:SendDefault("tonemap", "chromostereopsisOffset", "float", s_Instance.chromostereopsisOffset,0,10)
+		self:SendDefault("tonemap", "chromostereopsisScale", "float", s_Instance.chromostereopsisScale,0,10)
+		self:SendDefault("tonemap", "exposureAdjustTime", "float", s_Instance.exposureAdjustTime,0,100)
+		self:SendDefault("tonemap", "maxExposure", "float", s_Instance.maxExposure,0,100)
+		self:SendDefault("tonemap", "middleGray", "float", s_Instance.middleGray,0,100)
+		self:SendDefault("tonemap", "minExposure", "float", s_Instance.minExposure,0,100)
+		--self:SendDefault("tonemap", "realm", "fb.Realm)", s_Instance.realm)
+		--self:SendDefault("tonemap", "tonemapMethod", "fb.TonemapMethod)", s_Instance.tonemapMethod)
+	end
+
 	local s_TonemapData = p_State.tonemap
 
 	if s_TonemapData ~= nil then

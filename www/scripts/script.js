@@ -15,7 +15,7 @@ function Debug(string) {
 }
 
 function SendUpdate(s_Content) {
-    VU.Call('DispatchEventLocal', 'CT:UpdateValue', s_Content);
+    WebUI.Call('DispatchEventLocal', 'CT:UpdateValue', s_Content);
 }
 
 function AddOption(p_class, p_key, p_type, p_value, p_min, p_max) {
