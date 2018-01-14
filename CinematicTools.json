@@ -1,11 +1,9 @@
 {
-  "Name": "CinematicTools",
-  "Authors": [
-    "Powback"
-  ],
-  "Description": "UI used to modify VisualEnvironment",
-  "URL": "none",
-  "Version": 0,
-  "HasWebUI": true,
-  "HasVeniceEXT": true
+	"Name": "CinematicTools",
+	"Authors": ["Powback"],
+	"Description": "Synced Cinematictools",
+	"URL": "none",
+	"Version": 0,
+	"HasWebUI": true,
+	"HasVeniceEXT": true
 }
