@@ -11,8 +11,9 @@ function Debug(string) {
     debugconsole.appendChild(node);
 }
 
-function SendUpdate(s_Content) {
-    WebUI.Call('DispatchEventLocal', 'CT:UpdateValue', s_Content);
+function SendUpdate(p_Content) {
+    console.log(p_Content)
+    WebUI.Call('DispatchEventLocal', 'CT:UpdateValue', p_Content);
 }
 
 function AddField(p_Class, p_Field, p_Type, p_Value) {
@@ -187,11 +188,9 @@ function CreateEnum(p_Field, p_Type, p_Value) {
 
     var s_Enum = document.createElement("select");
     s_Enum.setAttribute("name", p_Field);
-    console.log(p_Type);
-    console.log(m_Enums)
     for(var i = 0; i < m_Enums[p_Type].length; i++) {
         var s_Option = document.createElement("option");
-        s_Option.setAttribute("value", m_Enums[p_Type][i]);
+        s_Option.setAttribute("value", i);
         s_Option.text = m_Enums[p_Type][i];
         if(i == p_Value) {
             s_Option.setAttribute("selected", "selected");
@@ -312,6 +311,19 @@ $(document).on('change mousemove', 'input', function() {
             Return+=this.name + ":" + this.value + ":";
         });
     }
+
+    SendUpdate(Return);
+});
+
+$(document).on('change', 'select', function() {
+
+    var s_KeyObject = $(this).parent(); //div brightness
+    var s_ClassObject = s_KeyObject.parent(); //div colorcorrection
+    var s_Class = $(s_ClassObject).attr("name");
+    var s_Key = $(s_KeyObject).attr("name");
+    var s_Type = $(s_KeyObject).attr("type");
+
+    var Return = s_Class + ":" + s_Key + ":" + "Enum" + ":" + $(this).val();
 
     SendUpdate(Return);
 });

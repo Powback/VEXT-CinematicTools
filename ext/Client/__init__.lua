@@ -145,7 +145,7 @@ function CinematicToolsClient:SendState(p_Class, p_State, p_TypeInfo)
 	for _, field in ipairs(p_TypeInfo.fields) do
 		if(self.m_SupportedTypes[field.typeInfo.name] == nil) then
 			if(field.typeInfo.enum) then
-				self:SendEnum(field.typeInfo)
+				self:SendEnum(field.typeInfo, p_State[field])
 			else
 				--print(field.typeInfo.name .. " is not supported yet.")
 			end
@@ -156,6 +156,8 @@ function CinematicToolsClient:SendState(p_Class, p_State, p_TypeInfo)
 	    		s_FixedName = "EndValue"
 	    	end
     	local s_WebUIJS = string.format("AddField(\"%s\",\"%s\",\"%s\",\"%s\")", p_Class, s_FixedName, field.typeInfo.name, tostring(p_State[firstToLower(s_FixedName)]))
+		print("Out: " .. s_WebUIJS)
+
     	WebUI:ExecuteJS(s_WebUIJS)
 	end
 end	
@@ -167,12 +169,18 @@ function CinematicToolsClient:SendEnum(p_Enum)
 	for _, field in ipairs(p_Enum.fields) do
 		s_Enum = s_Enum .. field.name .. ":"
 	end
-	WebUI:ExecuteJS(string.format("AddEnum(\"%s\", \"%s\")", p_Enum.name, s_Enum))
+	local s_EnumJS = string.format("AddEnum(\"%s\", \"%s\")", p_Enum.name, s_Enum)
+
+	self.m_SupportedTypes[p_Enum.name] = p_Enum
+
+	print("Out: " .. s_EnumJS)
+
+	WebUI:ExecuteJS(s_EnumJS)
 end
 
 -- TODO: Fix this. Looks pigdisgusting.
 function CinematicToolsClient:OnUpdateValue(p_Contents)
-	
+	print("In : " .. p_Contents)
 	local s_Content = split(p_Contents, ":")
 	local s_Class = firstToLower(s_Content[1]) -- ColorCorrection
 	local s_Field = firstToLower(s_Content[2]) -- Contrast
@@ -228,8 +236,12 @@ function CinematicToolsClient:OnUpdateValue(p_Contents)
 					local s_Val4 = tonumber(s_Content[11]) --1
 					m_class[s_Field] = Vec4(s_Val1,s_Val2,s_Val3,s_Val4)
 				end	
+				if(s_Type == "Enum") then -- Enum
 
-				
+					local s_Val = tonumber(s_Content[4])  -- Value
+					print(s_Val)
+					m_class[s_Field] = s_Val
+				end	
 			end
 		end
 	end
