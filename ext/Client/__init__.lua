@@ -20,7 +20,18 @@ function CinematicToolsClient:RegisterEvents()
     self.m_OnLoadedEvent = Events:Subscribe('ExtensionLoaded', self, self.OnLoaded)
     self.m_OnUpdateInputEvent = Events:Subscribe('Client:UpdateInput', self, self.OnUpdateInput)
     self.m_OnWebUIUpdateEvent = Events:Subscribe('CT:UpdateValue', self, self.OnUpdateValue)
+    self.m_OnWebUIUpdateEvent = Events:Subscribe('CT:SetKeyboard', self, self.OnSetKeyboard)
 end
+
+function CinematicToolsClient:OnSetKeyboard(p_Value)
+	if(p_Value == "true") then
+        WebUI:EnableKeyboard();
+    end
+    if(p_Value == "false") then
+    	WebUI:DisableKeyboard();
+    end
+end
+
 
 function CinematicToolsClient:OnLoaded()
 		-- Make sure all our VE states are fixed.
@@ -208,32 +219,23 @@ function CinematicToolsClient:OnUpdateValue(p_Contents)
 					end
 				end
 				if(s_Type == "Vec2") then -- Vec2
-					local s_var1 = s_Content[4] --x
-					local s_Val1 = tonumber(s_Content[5]) --1
-					local s_var2 = s_Content[6] --y
-					local s_Val2 = tonumber(s_Content[7]) --1
+					local s_Val1 = tonumber(s_Content[4]) --x
+					local s_Val2 = tonumber(s_Content[5]) --y
 					m_class[s_Field] = Vec2(s_Val1,s_Val2)
 				end		
 				if(s_Type == "Vec3") then -- Vec3
 
-					local s_var1 = s_Content[4] --x
-					local s_Val1 = tonumber(s_Content[5]) --1
-					local s_var2 = s_Content[6] --y
-					local s_Val2 = tonumber(s_Content[7]) --1
-					local s_var3 = s_Content[8] --z
-					local s_Val3 = tonumber(s_Content[9]) --1
+					local s_Val1 = tonumber(s_Content[4]) --x
+					local s_Val2 = tonumber(s_Content[5]) --y
+					local s_Val3 = tonumber(s_Content[6]) --x
 					m_class[s_Field] = Vec3(s_Val1,s_Val2,s_Val3)
 				end		
 				if(s_Type == "Vec4") then -- Vec4
 
-					local s_var1 = s_Content[4] --x
-					local s_Val1 = tonumber(s_Content[5]) --1
-					local s_var2 = s_Content[6] --y
-					local s_Val2 = tonumber(s_Content[7]) --1
-					local s_var3 = s_Content[8] --z
-					local s_Val3 = tonumber(s_Content[9]) --1
-					local s_var4 = s_Content[10] --w
-					local s_Val4 = tonumber(s_Content[11]) --1
+					local s_Val1 = tonumber(s_Content[4]) --x
+					local s_Val2 = tonumber(s_Content[5]) --y
+					local s_Val3 = tonumber(s_Content[6]) --x
+					local s_Val4 = tonumber(s_Content[7]) --x
 					m_class[s_Field] = Vec4(s_Val1,s_Val2,s_Val3,s_Val4)
 				end	
 				if(s_Type == "Enum") then -- Enum
@@ -317,3 +319,4 @@ shaderParamsCount // not used
 stateId // not used
 visibility // not used
 ]]
+
