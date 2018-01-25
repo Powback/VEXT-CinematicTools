@@ -11,19 +11,22 @@
     <div id="slider" data-wjs-element="box" step="0.0001"></div>
     <ul id="tabs">
         <li><a href="#Info">Info</a></li>
+        <li><a href="#Presets" onclick="UpdateCurrentPreset()">Presets</a></li>
     </ul>
     <div id="content">
-        <div id="Info" name="Info">
+        <div id="Info">
            CinematicTools Yo
+        </div>
+        <div id="Presets">
+            <div id="presetHolder">
+                PRESETS GOES HERE
+            </div>
+            <div id="CurrentStateHolder">
+                <textarea id="CurrentState" type="textbox"></textarea>
+            </div>
         </div>
     </div>
 </div>
-<ul id="console" style="position: absolute; bottom: 0px; z-index: -1">
-
-</ul>
-<ul id="mylog" style="position: absolute; bottom: 0px;right:0; z-index: -1">
-
-</ul>
 <script src="scripts/jquery-3.1.1.min.js"></script>
 <script src="scripts/jquery-ui.min.js"></script>
 <script src="scripts/vertical-tabs.js"></script>

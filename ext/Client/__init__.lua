@@ -1,10 +1,13 @@
 class 'CinematicToolsClient'
-
+json = require "json"
+ve_preset = require "ve_preset"
 
 function CinematicToolsClient:__init()
 	print("Initializing CinematicToolsClient")
 	self:RegisterVars()
 	self:RegisterEvents()
+	local s_Preset = json.decode(ve_preset:GetPreset())
+	print(s_Preset['Dof'])
 end
 
 

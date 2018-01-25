@@ -1,5 +1,7 @@
+var m_Presets = {};
 var m_Classes = {};
 var m_Enums = {};
+var m_CurrentChanges = {}
 var m_VectorNames = ["x", "y", "z", "w"];
 
 var currentFocus = null;
@@ -17,9 +19,20 @@ function Debug(string) {
     debugconsole.appendChild(node);
 }
 
-function SendUpdate(p_Content) {
-    console.log(p_Content)
-    WebUI.Call('DispatchEventLocal', 'CT:UpdateValue', p_Content);
+function SendUpdate(p_Class, p_Field, p_Type, p_Value) {
+
+    var Return = p_Class + ":" + p_Field + ":" + p_Type + ":" + p_Value;
+
+    if(m_CurrentChanges[p_Class] == null) {
+        m_CurrentChanges[p_Class] = {};
+    }
+    if(m_CurrentChanges[p_Class][p_Field] == null) {
+        m_CurrentChanges[p_Class][p_Field] = {};
+    }
+    m_CurrentChanges[p_Class][p_Field] = p_Value
+
+    console.log(Return)
+    WebUI.Call('DispatchEventLocal', 'CT:UpdateValue', Return);
 }
 
 function SetKeyboard(p_Value) {
@@ -27,7 +40,6 @@ function SetKeyboard(p_Value) {
 }
 
 function AddField(p_Class, p_Field, p_Type, p_Value) {
-
     if (m_Classes[p_Class] == null) {
         CreateClass(p_Class);
     }
@@ -74,6 +86,15 @@ function UpdateValue(p_Class, p_Field, p_Type, p_Value) {
     }
 }
 
+function CreatePreset(p_Preset) {
+    p_Preset[p_Preset] = {};
+
+    var nodeTitle = document.createElement("h2");
+    nodeTitle.innerHTML = p_Preset;
+
+    document.getElementById("Presets").appendChild(nodeTitle);
+}
+
 function CreateClass(p_Class) {
     m_Classes[p_Class] = {};
     var node = document.createElement("li"); // Create a <li> node
@@ -100,9 +121,6 @@ function CreateField(p_Class, p_Field, p_Type) {
 }
 
 function CreateValue(p_Class, p_Field, p_Type, p_Value) {
-    currentFocus = $("#" + p_Class + " #" + p_Field + " input");
-    focusedClass = p_Class;
-    focusedKey = p_Field;
 
     m_Classes[p_Class][p_Field] = p_Value;
     var s_ContentNode = document.createElement("div");
@@ -334,11 +352,18 @@ $(document).on('selectmenuchange', 'select', function() {
     var s_Class = $(s_ClassObject).attr("name");
     var s_Key = $(s_KeyObject).attr("name");
     var s_Type = $(s_KeyObject).attr("type");
+    var s_Value = $(this).val();
 
-    var Return = s_Class + ":" + s_Key + ":" + "Enum" + ":" + $(this).val();
 
-    SendUpdate(Return);
+    SendUpdate(s_Class, s_Key, "Enum", s_Value);
 
+});
+
+$(document).on('focus', 'textarea', function() {
+    SetKeyboard("true");
+});
+$(document).on('focusout', 'textarea', function() {
+    SetKeyboard("false");
 });
 
 $(document).on('change', 'input', function() {
@@ -348,14 +373,18 @@ $(document).on('change', 'input', function() {
     var s_Class = $(s_ClassObject).attr("name");
     var s_Key = $(s_KeyObject).attr("name");
     var s_Type = $(s_KeyObject).attr("type");
+    var s_Value = null;
 
     var Return = s_Class + ":" + s_Key + ":" + s_Type + ":";
-
     if (s_Type == "Boolean") {
-        Return += $(this).is(':checked');
+        s_Value = $(this).is(':checked');
+
+    } else {
+        s_Value = $(this).val()
+
     }
 
-    SendUpdate(Return);
+    SendUpdate(s_Class, s_Key, s_Type, s_Value);
 });
 
 
@@ -417,24 +446,21 @@ function SetToSlider(p_Element) {
 
 function ValueUpdated(p_Class, p_Field, p_Type, p_KeyObject) {
 
-    
-    var Return = p_Class + ":" + p_Field + ":" + p_Type + ":";
-    
-    console.log(p_KeyObject.attr("name"));
+    var s_Value = null;
     if (p_Type == "Boolean") {
-        Return += $(p_KeyObject).is(':checked');
+        s_Value = $(p_KeyObject).is(':checked');
     }
     if (p_Type == "Float32") {
-        Return += $(p_KeyObject).children(0).slider("value");
+        s_Value = $(p_KeyObject).children(0).slider("value");
     }
     if (p_Type == "Vec3" || p_Type == "Vec2" || p_Type == "Vec4") {
+        s_Value = "";
         $(p_KeyObject).children('div').each(function() {
 
-            Return += $(this).slider("option", "value") + ":";
+            s_Value += $(this).slider("option", "value") + ":";
         });
     }
-    console.log(Return);
-    SendUpdate(Return);
+    SendUpdate(p_Class, p_Field, p_Type, s_Value);
 };
 
 $(document).on('focusout', '#content input[displayType="slider"]', function() {
@@ -442,6 +468,10 @@ $(document).on('focusout', '#content input[displayType="slider"]', function() {
 });
 
 
+function UpdateCurrentPreset() {
+    var s_CurrentState = "";
+    $("#CurrentState").text(JSON.stringify(m_CurrentChanges, null, 4));
+}
 
 
 (function($) {
