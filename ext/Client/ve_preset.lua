@@ -3,8 +3,10 @@ class "ve_preset"
         "FirstPersonEnable": true
     },]]
 local table = [[{
+	"entityName": "CustomPreset",
+	"priority": 1,
     "ColorCorrection": {
-        "Brightness": "0.09:0.9:0.31:"
+        "Brightness": "1:0.9:0.31:"
     }
 }]]
 
