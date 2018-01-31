@@ -2,6 +2,7 @@ class 'CinematicToolsClient'
 json = require "json"
 ve_preset = require "ve_preset"
 ve_preset2 = require "ve_preset2"
+ve_preset3 = require "ve_preset2"
 
 function CinematicToolsClient:__init()
 	print("Initializing CinematicToolsClient")
@@ -113,7 +114,7 @@ function CinematicToolsClient:LoadPresets()
 					s_Preset[s_Class] ~= nil) and
 					s_Preset[s_Class][s_Field] ~= nil then
 						s_Value = s_Preset[s_Class][s_Field]
-						s_Priority = s_Preset['Priority']
+						s_Priority = tonumber(s_Preset['Priority'])
 						print("boi")
 				end 
 			end

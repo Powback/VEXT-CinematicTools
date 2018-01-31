@@ -2,7 +2,7 @@ class "ve_preset"
 local table = [[
 {
     "Name": "ve_preset",
-    "Priority": "0",
+    "Priority": "1",
     "ColorCorrection": {
         "Realm": "nil",
         "Enable": "true",
