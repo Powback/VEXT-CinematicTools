@@ -512,7 +512,8 @@ function UpdateCurrentPreset(p_PresetType) {
         '  return table\n' +
         'end\n' +
         '\n' +
-        'return ve_preset';
+        'return ' + m_CurrentPreset['Name'];
+
     $("#CurrentState").text(prefix);
 
     if(m_IsCombied) {

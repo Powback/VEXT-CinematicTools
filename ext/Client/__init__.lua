@@ -79,11 +79,11 @@ function CinematicToolsClient:OnUpdateInput(p_Delta)
 
 	if InputManager:WentKeyDown(InputDeviceKeys.IDK_F5) then
 		-- WebUI:ExecuteJS('document.location.reload()')
-		self:RemovePreset("CustomPreset")
+		self:RemovePreset(self.m_TestPreset1['Name'])
 	end
 		if InputManager:WentKeyDown(InputDeviceKeys.IDK_F6) then
 		-- WebUI:ExecuteJS('document.location.reload()')
-		self:RemovePreset("CustomPreset2")
+		self:RemovePreset(self.m_TestPreset2['Name'])
 	end
 
 end
@@ -109,7 +109,7 @@ function CinematicToolsClient:LoadPresets()
 			local s_Priority = 0
 			for i, s_Preset in pairs(self.m_Presets) do
 				if( s_Preset['Priority'] ~= nil and
-					s_Preset['Priority'] > s_Priority and
+					tonumber(s_Preset['Priority']) > s_Priority and
 					s_Preset[s_Class] ~= nil) and
 					s_Preset[s_Class][s_Field] ~= nil then
 						s_Value = s_Preset[s_Class][s_Field]
