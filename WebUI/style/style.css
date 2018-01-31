@@ -102,7 +102,6 @@ table {
     margin-right:12px;
 }
 
-
 .ui-widget-header {
     background: #e9e9e991;
 }
@@ -120,7 +119,9 @@ table {
     margin-top: 4px;
 }
 
-textarea {
+#CurrentState {
     width: 100%;
-    height: 80%;
+    background-color: #d0d0d0;
+    height: calc(100% - 145px);
+    resize: none;
 }

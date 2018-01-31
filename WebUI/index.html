@@ -19,11 +19,21 @@
         </div>
         <div id="Presets">
             <div id="presetHolder">
-                PRESETS GOES HERE
+                <label for="PresetName">Preset Name:</label>
+                <input type="text" id="PresetName" value="CustomPreset">
+                <label for="PresetPriority">Priority (Higher are loaded last):</label>
+                <input type="number" id="PresetPriority" value="0">
             </div>
             <div id="CurrentStateHolder">
-                <textarea id="CurrentState" disabled></textarea>
+                <fieldset>
+                    <label for="current">Current</label>
+                    <input type="radio" name="radio-1" id="current" onclick="UpdateCurrentPreset(false)" checked>
+                    <label for="combined">Full</label>
+                    <input type="radio" name="radio-1" id="combined" onclick="UpdateCurrentPreset(true)">
+                </fieldset>
+                <textarea id="CurrentState" onclick="this.focus();this.select()" readonly="readonly"></textarea>
             </div>
+
         </div>
     </div>
 </div>
@@ -39,9 +49,13 @@
             handle: "#titlebar",
             containment: "parent"
         });
-        $("#window").tabs({ 
-            orientation: "vertical" 
+        $("#window").tabs({
+            orientation: "vertical"
         });
+        $("#CurrentStateHolder input[type='radio']").checkboxradio({
+            icon: false
+        });
+
         $("#window").resizable({
             handles: "all",
             containment: "parent"
@@ -59,6 +73,7 @@
             }
         })
     });
+
 
 
 

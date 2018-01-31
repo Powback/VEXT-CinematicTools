@@ -11,8 +11,8 @@ end
 
 
 function CinematicToolsClient:RegisterVars()
-	self.m_SupportedTypes = Set {"Vec2", "Vec3", "Vec4", "Float32", "Boolean", "Int"}
-	self.m_SupportedClasses = Set {"CameraParams", "CharacterLighting", "ColorCorrection", "Dof", "DynamicAO", "Enlighten", "FilmGrain", "Fog", "LensScope", "OutdoorLight", "Sky", "SunFlare", "Tonemap", "Vignette", "Wind"}
+	self.m_SupportedTypes = {"Vec2", "Vec3", "Vec4", "Float32", "Boolean", "Int"}
+	self.m_SupportedClasses = {"CameraParams", "CharacterLighting", "ColorCorrection", "Dof", "DynamicAO", "Enlighten", "FilmGrain", "Fog", "LensScope", "OutdoorLight", "Sky", "SunFlare", "Tonemap", "Vignette", "Wind"}
 	self.m_TestPreset1 = json.decode(ve_preset:GetPreset())
 	self.m_TestPreset2 = json.decode(ve_preset2:GetPreset())
 	self.m_Presets = {}
@@ -95,7 +95,7 @@ function CinematicToolsClient:LoadPresets()
 	local s_States = VisualEnvironmentManager:GetStates()
 
 
-	for s_Class in pairs(self.m_SupportedClasses) do
+	for _,s_Class in pairs(self.m_SupportedClasses) do
 		local typeInfo = _G[s_Class.."ComponentData"].typeInfo
 		s_Class_lower = firstToLower(s_Class)
 		for _, l_Field in ipairs(typeInfo.fields) do
@@ -108,22 +108,20 @@ function CinematicToolsClient:LoadPresets()
 
 			local s_Priority = 0
 			for i, s_Preset in pairs(self.m_Presets) do
-				if( s_Preset['priority'] ~= nil and
-					s_Preset['priority'] > s_Priority and
+				if( s_Preset['Priority'] ~= nil and
+					s_Preset['Priority'] > s_Priority and
 					s_Preset[s_Class] ~= nil) and
 					s_Preset[s_Class][s_Field] ~= nil then
 						s_Value = s_Preset[s_Class][s_Field]
-						s_Priority = s_Preset['priority']
+						s_Priority = s_Preset['Priority']
 						print("boi")
 				end 
 			end
 			if s_Value ~= nil then
-				print("Using modified " .. s_Value)
 				local s_Update = string.format("%s:%s:%s:%s", s_Class, s_Field, s_Type, tostring(s_Value))
 				self:OnUpdateValue(s_Update)
 			else
 				if(self.m_Original[s_Class] ~= nil and self.m_Original[s_Class][s_Field] ~= nil) then
-					print("Using original")
 					local s_Original = string.format("%s:%s:%s:%s", s_Class, s_Field, s_Type, tostring(self.m_Original[s_Class][s_Field]))
 					self:OnUpdateValue(s_Original)
 				end
@@ -134,8 +132,8 @@ function CinematicToolsClient:LoadPresets()
 end
 
 function CinematicToolsClient:LoadPreset(p_Preset)
-	print("Adding " .. p_Preset['entityName'] )
-	self.m_Presets[p_Preset['entityName']] = p_Preset
+	print("Adding " .. p_Preset['Name'] )
+	self.m_Presets[p_Preset['Name']] = p_Preset
 	self:LoadPresets()
 end
 
@@ -164,8 +162,7 @@ function CinematicToolsClient:FixEnvironmentState(p_State)
 	    return
 	end
 	print('Fixing visual environment state ' .. p_State.entityName)
-
-	for s_Class in pairs(self.m_SupportedClasses) do
+	for _,s_Class in pairs(self.m_SupportedClasses) do
 		s_Class_lower = firstToLower(s_Class)
 
 		if p_State[s_Class_lower] == nil then
@@ -177,22 +174,15 @@ function CinematicToolsClient:FixEnvironmentState(p_State)
 		local s_State = p_State[s_Class_lower]
 
 		local typeInfo = _G[s_Class.."ComponentData"].typeInfo
-		for _, l_Field in ipairs(typeInfo.fields) do
-			local s_Field = l_Field.name
-			if(s_Field == "End") then
-				s_Field = "EndValue"
-			end	
 
-			if s_Field ~= "Realm" then
-				self:SendState(s_Class, s_State , _G[s_Class.."ComponentData"].typeInfo)
-			end		
+		--placeholder while the creation thing is fucked
+		if(s_State ~= nil) then
+			self:SendState(s_Class, s_State , _G[s_Class.."ComponentData"].typeInfo)	
 		end
 	end
 end
 
 function CinematicToolsClient:SendState(p_Class, p_State, p_TypeInfo)
-
-
 	for _, field in ipairs(p_TypeInfo.fields) do
 		if(self.m_SupportedTypes[field.typeInfo.name] == nil) then
 			if(field.typeInfo.enum) then

@@ -1,13 +1,14 @@
-var m_Presets = {};
-var m_Classes = {};
+var m_CurrentPreset = {};
+var m_FullPreset = {"Name": "", "Priority": ""};
+var m_OriginalPreset = {};
 var m_Enums = {};
-var m_CurrentChanges = {}
 var m_VectorNames = ["x", "y", "z", "w"];
 
 var currentFocus = null;
-var focusedClass = null;
-var focusedKey = null;
-var focusedSubKey = null;
+
+
+var m_IsIngame = true;
+var m_IsCombied = false;
 
 
 var debugconsole = document.getElementById("console")
@@ -21,37 +22,46 @@ function Debug(string) {
 
 function SendUpdate(p_Class, p_Field, p_Type, p_Value) {
 
+    if(p_Class == null || p_Field == null || p_Type == null || p_Value == null) {
+        return
+    }
+    m_FullPreset[p_Class][p_Field] = p_Value;
     var Return = p_Class + ":" + p_Field + ":" + p_Type + ":" + p_Value;
 
-    if(m_CurrentChanges[p_Class] == null) {
-        m_CurrentChanges[p_Class] = {};
+    if(m_CurrentPreset[p_Class] == null) {
+        m_CurrentPreset[p_Class] = {};
     }
-    if(m_CurrentChanges[p_Class][p_Field] == null) {
-        m_CurrentChanges[p_Class][p_Field] = {};
+    if(m_CurrentPreset[p_Class][p_Field] == null) {
+        m_CurrentPreset[p_Class][p_Field] = {};
     }
-    m_CurrentChanges[p_Class][p_Field] = p_Value
+    m_CurrentPreset[p_Class][p_Field] = p_Value;
 
-    console.log(Return)
-    WebUI.Call('DispatchEventLocal', 'CT:UpdateValue', Return);
+    console.log(Return);
+    if(m_IsIngame) {
+        WebUI.Call('DispatchEventLocal', 'CT:UpdateValue', Return);
+    }
 }
 
 function SetKeyboard(p_Value) {
-    WebUI.Call('DispatchEventLocal', 'CT:SetKeyboard', p_Value);
+    if(m_IsIngame) {
+        WebUI.Call('DispatchEventLocal', 'CT:SetKeyboard', p_Value);
+
+    }
 }
 
 function AddField(p_Class, p_Field, p_Type, p_Value) {
-    if (m_Classes[p_Class] == null) {
+    if (m_FullPreset[p_Class] == null) {
         CreateClass(p_Class);
     }
 
-    if (m_Classes[p_Class][p_Field] == null) {
+    if (m_FullPreset[p_Class][p_Field] == null) {
         CreateField(p_Class, p_Field, p_Type);
         CreateValue(p_Class, p_Field, p_Type, p_Value)
     } else {
         UpdateValue(p_Class, p_Field, p_Type, p_Value)
     }
 }
-
+//outdated
 function UpdateValue(p_Class, p_Field, p_Type, p_Value) {
     console.log(p_Class + " | " + p_Field + " | " + p_Value)
     if (p_Type == "Boolean") {
@@ -96,7 +106,9 @@ function CreatePreset(p_Preset) {
 }
 
 function CreateClass(p_Class) {
-    m_Classes[p_Class] = {};
+    m_FullPreset[p_Class] = {};
+    m_OriginalPreset[p_Class] = {};
+
     var node = document.createElement("li"); // Create a <li> node
     var link = document.createElement("a");
     link.href = "#" + p_Class;
@@ -112,7 +124,8 @@ function CreateClass(p_Class) {
 
 
 function CreateField(p_Class, p_Field, p_Type) {
-    m_Classes[p_Class][p_Field] = null;
+    m_FullPreset[p_Class][p_Field] = null;
+    m_OriginalPreset[p_Class][p_Field] = null;
 
     var nodeTitle = document.createElement("h2");
     nodeTitle.innerHTML = p_Field;
@@ -122,7 +135,8 @@ function CreateField(p_Class, p_Field, p_Type) {
 
 function CreateValue(p_Class, p_Field, p_Type, p_Value) {
 
-    m_Classes[p_Class][p_Field] = p_Value;
+    m_FullPreset[p_Class][p_Field] = p_Value;
+    m_OriginalPreset[p_Class][p_Field] = p_Value;
     var s_ContentNode = document.createElement("div");
 
     switch (p_Type) {
@@ -217,15 +231,15 @@ function CreateFloat(p_Class, p_Field, p_Type, p_Value) {
         step: 0.01,
         create: function() {
             $(s_Display).text($(this).slider("value"));
+            if($("#" + p_Class + " #" + p_Field).length) {
+                console.log($("#" + p_Class + " #" + p_Field));
+                ValueUpdated(p_Class, p_Field, p_Type, $("#" + p_Class + " #" + p_Field))
+            }
         },
         slide: function(event, ui) {
             $(s_Display).text(ui.value);
             ValueUpdated(p_Class, p_Field, p_Type, $("#" + p_Class + " #" + p_Field));
         },
-        stop: function(event, ui) {
-            $("#" + focusedClass + " #" + focusedKey + " div[name=\"" + focusedSubKey + "\"] .valueDisplay").text(ui.value);
-            ValueUpdated(p_Class, p_Field, p_Type, $("#" + p_Class + " #" + p_Field));
-        }
     });
 
     s_ContentNode.appendChild(s_Slider);
@@ -366,7 +380,14 @@ $(document).on('focusout', 'textarea', function() {
     SetKeyboard("false");
 });
 
-$(document).on('change', 'input', function() {
+$(document).on('focus', 'input', function() {
+    SetKeyboard("true");
+});
+$(document).on('focusout', 'input', function() {
+    SetKeyboard("false");
+});
+
+$(document).on('change', '#content input[type=\"checkbox\"]', function() {
 
     var s_KeyObject = $(this).parent(); //div brightness
     var s_ClassObject = s_KeyObject.parent(); //div colorcorrection
@@ -405,10 +426,6 @@ $(document).on('contextmenu', '.ui-slider-handle', function() {
     s_Parent.changeElementType("input");
 
     currentFocus = $("#" + s_Class + " #" + s_Key + " input");
-    focusedClass = s_Class;
-    focusedKey = s_Key;
-    focusedSubKey = s_SubKey;
-
 
     currentFocus.focus();
     currentFocus.select();
@@ -416,48 +433,43 @@ $(document).on('contextmenu', '.ui-slider-handle', function() {
 });
 
 function SetToSlider(p_Element) {
-    var s_Val = $(currentFocus).val();
-    var s_Min = $(currentFocus).attr("min");
-    var s_Max = $(currentFocus).attr("max");
-    console.log(focusedClass + " | " + focusedKey + " | " + focusedSubKey)
-    $("#" + focusedClass + " #" + focusedKey + " input[name=\"" + focusedSubKey + "\"]").changeElementType("div");
-    $("#" + focusedClass + " #" + focusedKey + " div[name=\"" + focusedSubKey + "\"]").slider({
+    var s_Val = $(p_Element).val();
+    var s_Class = $(p_Element).parent().parent().attr("name");
+    var s_Field = $(p_Element).parent().attr("name");
+    var s_Type = $(p_Element).parent().attr("type");
+    var s_Min = $(p_Element).attr("min");
+    var s_Max = $(p_Element).attr("max");
+    var s_Element = $(p_Element).changeElementType("div");
+    $(s_Element).slider({
         range: "max",
         min: GetSliderMin(parseFloat(s_Val)),
         max: GetSliderMax(parseFloat(s_Val)),
         value: parseFloat(s_Val),
         step: 0.01,
         create: function() {
-            $("#" + focusedClass + " #" + focusedKey + " div[name=\"" + focusedSubKey + "\"] .valueDisplay").text($(this).slider("value"));
+            $(this).children(".valueDisplay").text($(this).slider("value"));
+            ValueUpdated(s_Class, s_Field, s_Type, $("#" + s_Class + " #" + s_Field));
         },
         slide: function(event, ui) {
-            $("#" + focusedClass + " #" + focusedKey + " div[name=\"" + focusedSubKey + "\"] .valueDisplay").text(ui.value);
-            ValueUpdated(focusedClass, focusedKey, $("#" + focusedClass + " #" + focusedKey).attr("type"), $("#" + focusedClass + " #" + focusedKey));
-        },
-        stop: function(event, ui) {
-            $("#" + focusedClass + " #" + focusedKey + " div[name=\"" + focusedSubKey + "\"] .valueDisplay").text(ui.value);
-            ValueUpdated(focusedClass, focusedKey, $("#" + focusedClass + " #" + focusedKey).attr("type"), $("#" + focusedClass + " #" + focusedKey));
+            $(this).children(".valueDisplay").text(ui.value);
+            ValueUpdated(s_Class, s_Field, s_Type, $("#" + s_Class + " #" + s_Field));
         }
-
     });
-    currentFocus = null;
     SetKeyboard("false");
 }
 
 function ValueUpdated(p_Class, p_Field, p_Type, p_KeyObject) {
-
     var s_Value = null;
     if (p_Type == "Boolean") {
         s_Value = $(p_KeyObject).is(':checked');
     }
     if (p_Type == "Float32") {
-        s_Value = $(p_KeyObject).children(0).slider("value");
+        s_Value = $(p_KeyObject).children(0).children(".valueDisplay").text();
     }
     if (p_Type == "Vec3" || p_Type == "Vec2" || p_Type == "Vec4") {
         s_Value = "";
         $(p_KeyObject).children('div').each(function() {
-
-            s_Value += $(this).slider("option", "value") + ":";
+            s_Value += $(this).children(".valueDisplay").text() + ":";
         });
     }
     SendUpdate(p_Class, p_Field, p_Type, s_Value);
@@ -467,25 +479,77 @@ $(document).on('focusout', '#content input[displayType="slider"]', function() {
     SetToSlider(this);
 });
 
+$(document).on('keyup', '#content input[displayType="slider"]', function(e) {
+    if (e.keyCode == 13) {
+        $(this).blur();
+        SetToSlider(this);
+    }
+});
 
-function UpdateCurrentPreset() {
+
+$(document).on('change', '#presetHolder input', function() {
+    UpdateCurrentPreset()
+});
+
+function UpdateCurrentPreset(p_PresetType) {
+    if (p_PresetType != null) {
+        m_IsCombied = p_PresetType
+    }
+
     var s_CurrentState = "";
-    $("#CurrentState").text(JSON.stringify(m_CurrentChanges, null, 4));
+
+    m_CurrentPreset['Name'] = $('#PresetName').val();
+    m_CurrentPreset['Priority'] = $('#PresetPriority').val();
+
+    m_FullPreset['Name'] = m_CurrentPreset['Name']
+    m_FullPreset['Priority'] = m_CurrentPreset['Priority'];
+
+    var prefix =    'class "' + m_CurrentPreset['Name'] +'"\n' +
+                    'local table = [[\n';
+
+    var suffix = '\n]]\n\n\n' +
+        'function '+ m_CurrentPreset['Name'] +  ':GetPreset()\n' +
+        '  return table\n' +
+        'end\n' +
+        '\n' +
+        'return ve_preset';
+    $("#CurrentState").text(prefix);
+
+    if(m_IsCombied) {
+        $("#CurrentState").text($("#CurrentState").text() + JSON.stringify(m_FullPreset, null, 4));
+    } else {
+        $("#CurrentState").text($("#CurrentState").text() + JSON.stringify(m_CurrentPreset, null, 4));
+    }
+
+    $("#CurrentState").text($("#CurrentState").text() + suffix);
 }
 
 
 (function($) {
     $.fn.changeElementType = function(newType) {
-        var attrs = {};
+        var newElements = [];
 
-        $.each(this[0].attributes, function(idx, attr) {
-            attrs[attr.nodeName] = attr.nodeValue;
+        $(this).each(function() {
+            var attrs = {};
+
+            $.each(this.attributes, function(idx, attr) {
+                attrs[attr.nodeName] = attr.nodeValue;
+            });
+
+            var newElement = $("<" + newType + "/>", attrs).append($(this).contents());
+
+            $(this).replaceWith(newElement);
+
+            newElements.push(newElement);
         });
 
-        this.replaceWith(function() {
-            return $("<" + newType + "/>", attrs).append($(this).contents());
-        });
-    }
+        return $(newElements);
+    };
 })(jQuery);
 
 
+$(document).ready(function () {
+    if (window.location.href.indexOf("webui") == -1) {
+        m_IsIngame = false;
+    }
+});
