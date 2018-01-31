@@ -2,7 +2,7 @@ class 'CinematicToolsClient'
 json = require "json"
 ve_preset = require "ve_preset"
 ve_preset2 = require "ve_preset2"
-ve_preset3 = require "ve_preset2"
+ve_base = require "ve_base"
 
 function CinematicToolsClient:__init()
 	print("Initializing CinematicToolsClient")
@@ -16,6 +16,7 @@ function CinematicToolsClient:RegisterVars()
 	self.m_SupportedClasses = {"CameraParams", "CharacterLighting", "ColorCorrection", "Dof", "DynamicAO", "Enlighten", "FilmGrain", "Fog", "LensScope", "OutdoorLight", "Sky", "SunFlare", "Tonemap", "Vignette", "Wind"}
 	self.m_TestPreset1 = json.decode(ve_preset:GetPreset())
 	self.m_TestPreset2 = json.decode(ve_preset2:GetPreset())
+	self.m_base = json.decode(ve_base:GetPreset())
 	self.m_Presets = {}
 	self.m_Original = {}
 end
@@ -75,7 +76,7 @@ function CinematicToolsClient:OnUpdateInput(p_Delta)
 
 	if InputManager:WentKeyDown(InputDeviceKeys.IDK_F4) then
 		-- WebUI:ExecuteJS('document.location.reload()')
-		self:LoadPreset(self.m_TestPreset2)
+		self:LoadPreset(self.m_base)
 	end
 
 	if InputManager:WentKeyDown(InputDeviceKeys.IDK_F5) then
@@ -84,7 +85,7 @@ function CinematicToolsClient:OnUpdateInput(p_Delta)
 	end
 		if InputManager:WentKeyDown(InputDeviceKeys.IDK_F6) then
 		-- WebUI:ExecuteJS('document.location.reload()')
-		self:RemovePreset(self.m_TestPreset2['Name'])
+		self:RemovePreset(self.m_base['Name'])
 	end
 
 end
@@ -115,7 +116,6 @@ function CinematicToolsClient:LoadPresets()
 					s_Preset[s_Class][s_Field] ~= nil then
 						s_Value = s_Preset[s_Class][s_Field]
 						s_Priority = tonumber(s_Preset['Priority'])
-						print("boi")
 				end 
 			end
 			if s_Value ~= nil then

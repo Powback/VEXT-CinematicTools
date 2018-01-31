@@ -125,3 +125,7 @@ table {
     height: calc(100% - 145px);
     resize: none;
 }
+
+label[type="NotSupported"] {
+    color:#c1c1c1;
+}

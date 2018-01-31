@@ -272,7 +272,8 @@ function NotImplemented() {
     var s_ContentNode = document.createElement("div");
 
     var s_Float = document.createElement("label");
-    s_Float.text = "NotImplemented";
+    s_Float.innerHTML = "Not supported";
+    s_Float.setAttribute("type", "NotSupported");
     s_ContentNode.appendChild(s_Float);
     return s_ContentNode;
 }
