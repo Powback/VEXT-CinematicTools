@@ -10,6 +10,8 @@ var currentFocus = null;
 var m_IsIngame = true;
 var m_IsCombied = false;
 
+var m_CurrentlyUpdating = false
+
 
 var debugconsole = document.getElementById("console")
 
@@ -21,7 +23,10 @@ function Debug(string) {
 }
 
 function SendUpdate(p_Class, p_Field, p_Type, p_Value) {
-
+    // Make sure that we don't send updates when we're updating our sliders.
+    if(m_CurrentlyUpdating) {
+        return
+    }
     if(p_Class == null || p_Field == null || p_Type == null || p_Value == null) {
         return
     }
@@ -36,7 +41,6 @@ function SendUpdate(p_Class, p_Field, p_Type, p_Value) {
     }
     m_CurrentPreset[p_Class][p_Field] = p_Value;
 
-    console.log(Return);
     if(m_IsIngame) {
         WebUI.Call('DispatchEventLocal', 'CT:UpdateValue', Return);
     }
@@ -63,37 +67,54 @@ function AddField(p_Class, p_Field, p_Type, p_Value) {
 }
 //outdated
 function UpdateValue(p_Class, p_Field, p_Type, p_Value) {
-    console.log(p_Class + " | " + p_Field + " | " + p_Value)
     if (p_Type == "Boolean") {
         if (p_Value == "true") {
-            $("#" + p_Class + " #" + p_Field + " input[name='" + p_Type + "']").attr("checked", "checked");
+            $("#" + p_Class + " #" + p_Field + " input[inputtype='" + p_Type + "']").attr("checked", "checked");
             //$("#"+p_Class+" #"+ p_Type+" input[name='"+ p_Field +"']" ).val(p_Value);
         } else {
-            $("#" + p_Class + " #" + p_Field + " input[name='" + p_Type + "']").removeAttr("checked");
+            $("#" + p_Class + " #" + p_Field + " input[inputtype='" + p_Type + "']").removeAttr("checked");
         }
+        return;
     }
-    if (p_Type == "Float32") {
-        $("#" + p_Class + " #" + p_Field + " input[name='" + p_Type + "']").val(parseFloat(p_Value));
-        //$("#"+p_Class+" #"+ p_Type+" input[name='"+ p_Field +"']" ).val(p_Value);
+    var s_IterationCount = 0;
+    var s_Value = null;
+    switch (p_Type) {
+        case "Float32":
+            s_IterationCount = 1;
+            s_Value = {0: parseFloat(p_Value) };
+            break;
+        case "Vec2":
+            s_IterationCount = 2;
+            s_Value = ParseVec(p_Value);
+            break;
+        case "Vec3":
+            s_IterationCount = 3;
+            s_Value = ParseVec(p_Value);
+            break;
+        case "Vec4":
+            s_IterationCount = 4;
+            s_Value = ParseVec(p_Value);
+            break;
+        // Enum
+        default:
+            $("#" + p_Class + " #" + p_Field + " select").val(p_Value);
+            $("#" + p_Class + " #" + p_Field + " select").selectmenu("refresh");
+        return;
     }
-    if (p_Type == "Vec2") {
-        var vec2 = ParseVec(p_Value)
-        $("#" + p_Class + " #" + p_Field + " input[name='x']").val(vec2[0]);
-        $("#" + p_Class + " #" + p_Field + " input[name='y']").val(vec2[1]);
+
+
+    m_CurrentlyUpdating = true;
+    for(var i = 0; i < s_IterationCount; i++) {
+        sl = $("#" + p_Class + " #" + p_Field).children().eq(i);
+        sl.slider({
+            value: parseFloat(parseFloat(s_Value[i])),
+            min: GetSliderMin(parseFloat(s_Value[i])),
+            max: GetSliderMax(parseFloat(s_Value[i]))
+        });
+        sl.slider('option','slide')
+            .call(sl,null,{ handle: $('.ui-slider-handle', sl), value: s_Value[i] });
     }
-    if (p_Type == "Vec3") {
-        var vec3 = ParseVec(p_Value)
-        $("#" + p_Class + " #" + p_Field + " input[name='x']").val(vec3[0]);
-        $("#" + p_Class + " #" + p_Field + " input[name='y']").val(vec3[1]);
-        $("#" + p_Class + " #" + p_Field + " input[name='z']").val(vec3[2]);
-    }
-    if (p_Type == "Vec4") {
-        var vec4 = ParseVec(p_Value)
-        $("#" + p_Class + " #" + p_Field + " input[name='x']").val(vec4[0]);
-        $("#" + p_Class + " #" + p_Field + " input[name='y']").val(vec4[1]);
-        $("#" + p_Class + " #" + p_Field + " input[name='z']").val(vec4[2]);
-        $("#" + p_Class + " #" + p_Field + " input[name='w']").val(vec4[3]);
-    }
+    m_CurrentlyUpdating = false;
 }
 
 function CreatePreset(p_Preset) {
@@ -146,7 +167,6 @@ function CreateValue(p_Class, p_Field, p_Type, p_Value) {
             s_ContentNode = CreateVec(p_Class, p_Field, p_Type, p_Value);
             break;
         case "Boolean":
-            console.log("OY! " + p_Class)
             s_ContentNode = CreateBool(p_Field, p_Value);
             break;
         case "Float32":
@@ -195,7 +215,6 @@ function CreateVec(p_Class, p_Field, p_Type, p_Value) {
 }
 
 function CreateBool(p_Field, p_Value) {
-    console.log("YO!" + p_Field + " | " + p_Value);
     var s_ContentNode = document.createElement("div");
 
     var s_Bool = document.createElement("input");
@@ -232,7 +251,6 @@ function CreateFloat(p_Class, p_Field, p_Type, p_Value) {
         create: function() {
             $(s_Display).text($(this).slider("value"));
             if($("#" + p_Class + " #" + p_Field).length) {
-                console.log($("#" + p_Class + " #" + p_Field));
                 ValueUpdated(p_Class, p_Field, p_Type, $("#" + p_Class + " #" + p_Field))
             }
         },
@@ -352,7 +370,6 @@ function ParseEnum(p_Type, p_Value) {
 }
 
 function AddEnum(p_Type, p_Value) {
-    console.log(p_Value)
     var s_Enums = p_Value.split(":")
     s_Enums.splice(s_Enums.length - 1, 1);
     m_Enums[p_Type] = s_Enums;
@@ -417,7 +434,6 @@ $(document).on('contextmenu', '.ui-slider-handle', function() {
     var s_Key = $(s_KeyObject).attr("name");
     var s_SubKey = $(this).parent().attr("name");
     var s_Type = $(s_KeyObject).attr("type");
-    console.log(s_Key);
 
     var s_Parent = $(this).parent();
     var s_Value = s_Parent.slider("value");

@@ -13,7 +13,27 @@ end
 
 function CinematicToolsClient:RegisterVars()
 	self.m_SupportedTypes = {"Vec2", "Vec3", "Vec4", "Float32", "Boolean", "Int"}
-	self.m_SupportedClasses = {"CameraParams", "CharacterLighting", "ColorCorrection", "Dof", "DynamicAO", "Enlighten", "FilmGrain", "Fog", "LensScope", "OutdoorLight", "Sky", "SunFlare", "Tonemap", "Vignette", "Wind"}
+	self.m_SupportedClasses = {
+		"CameraParams",
+		"CharacterLighting",
+		"ColorCorrection",
+		"DamageEffect",
+		"Dof",
+		"DynamicAO",
+		"DynamicEnvmap",
+		"Enlighten",
+		"FilmGrain",
+		"Fog",
+		"LensScope",
+		"MotionBlur",
+		"OutdoorLight",
+		"PlanarReflection",
+		"ScreenEffect",
+		"Sky",
+		"SunFlare",
+		"Tonemap",
+		"Vignette",
+		"Wind"}
 	self.m_TestPreset1 = json.decode(ve_preset:GetPreset())
 	self.m_TestPreset2 = json.decode(ve_preset2:GetPreset())
 	self.m_base = json.decode(ve_base:GetPreset())
@@ -121,10 +141,12 @@ function CinematicToolsClient:LoadPresets()
 			if s_Value ~= nil then
 				local s_Update = string.format("%s:%s:%s:%s", s_Class, s_Field, s_Type, tostring(s_Value))
 				self:OnUpdateValue(s_Update)
+				self:SendValue(s_Class, s_Field, s_Type, tostring(s_Value))
 			else
 				if(self.m_Original[s_Class] ~= nil and self.m_Original[s_Class][s_Field] ~= nil) then
 					local s_Original = string.format("%s:%s:%s:%s", s_Class, s_Field, s_Type, tostring(self.m_Original[s_Class][s_Field]))
 					self:OnUpdateValue(s_Original)
+					self:SendValue(s_Class, s_Field, s_Type, tostring(self.m_Original[s_Class][s_Field]))
 				end
 			end
 		end
@@ -174,7 +196,13 @@ function CinematicToolsClient:FixEnvironmentState(p_State)
 
 		local s_State = p_State[s_Class_lower]
 
+		if(_G[s_Class.."ComponentData"] == nil) then
+			print(tostring(s_Class) .. " | " .. tostring(s_State))
+			return
+		end
+
 		local typeInfo = _G[s_Class.."ComponentData"].typeInfo
+
 
 		--placeholder while the creation thing is fucked
 		if(s_State ~= nil) then
@@ -211,6 +239,15 @@ function CinematicToolsClient:SendState(p_Class, p_State, p_TypeInfo)
 
 		WebUI:ExecuteJS(s_WebUIJS)
 	end
+end
+
+function CinematicToolsClient:SendValue(p_Class, p_Field, p_Type, p_Value)
+
+	
+  	local s_WebUIJS = string.format("AddField(\"%s\",\"%s\",\"%s\",\"%s\")", p_Class, p_Field, p_Type, p_Value)
+	--print("Out: " .. s_WebUIJS)
+	WebUI:ExecuteJS(s_WebUIJS)
+	
 end
 
 --self:SendDefault("vignette","enable","bool", s_Vignette.enable, 0, 360)
@@ -289,6 +326,7 @@ function CinematicToolsClient:OnUpdateValue(p_Contents)
 	local s_States = VisualEnvironmentManager:GetStates()
 
 	for i, s_State in ipairs(s_States) do
+
 		if s_State.entityName ~= 'EffectEntity' then
 			local m_class = s_State[s_Class] --colorCorrection
 			if m_class ~= nil then
@@ -332,6 +370,7 @@ function CinematicToolsClient:OnUpdateValue(p_Contents)
 					--print(s_Val)
 					m_class[s_Field] = s_Val
 				end
+
 			end
 		end
 	end
@@ -364,6 +403,9 @@ function split(pString, pPattern)
 	return Table
 end
 
+function firstToUpper(str)
+	return (str:gsub("^%U", string.upper))
+end
 
 function firstToLower(str)
 	return (str:gsub("^%L", string.lower))
