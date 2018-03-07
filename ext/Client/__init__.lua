@@ -38,7 +38,11 @@ function CinematicToolsClient:RegisterVars()
 	self.m_TestPreset2 = json.decode(ve_preset2:GetPreset())
 	self.m_base = json.decode(ve_base:GetPreset())
 	self.m_Presets = {}
+	self.m_ActivePresets = {}
+	self.m_RemovedPresets = {}
 	self.m_Original = {}
+	self.m_LerpUpdate = {}
+	self.m_LerpStart = {}
 end
 
 
@@ -75,11 +79,24 @@ function CinematicToolsClient:OnLoaded()
 end
 
 
-function CinematicToolsClient:OnUpdateInput(p_Delta)
+function CinematicToolsClient:OnUpdateInput(p_Delta, p_SimulationDelta)
+
+	if(self.m_LerpUpdate['time'] ~= nil ) then
+		
+		local TimeSinceStarted = SharedUtils:GetTimeMS() - self.m_LerpUpdate['startTime']
+		local PercentageComplete = TimeSinceStarted / self.m_LerpUpdate['time']
+		self:UpdateLerp(PercentageComplete)
+		if(PercentageComplete >= 1) then
+			self.m_LerpUpdate = {}
+			self.m_LerpStart = {}
+			return
+		end
+	end
+
 
 	if InputManager:WentKeyDown(InputDeviceKeys.IDK_F1) then
 		-- WebUI:ExecuteJS('document.location.reload()')
-		self:LoadPreset(self.m_TestPreset1)
+		self:LoadPreset(self.m_TestPreset1, 1)
 	end
 
 	if InputManager:WentKeyDown(InputDeviceKeys.IDK_F2) then
@@ -96,12 +113,12 @@ function CinematicToolsClient:OnUpdateInput(p_Delta)
 
 	if InputManager:WentKeyDown(InputDeviceKeys.IDK_F4) then
 		-- WebUI:ExecuteJS('document.location.reload()')
-		self:LoadPreset(self.m_base)
+		self:LoadPreset(self.m_base, 1)
 	end
 
 	if InputManager:WentKeyDown(InputDeviceKeys.IDK_F5) then
 		-- WebUI:ExecuteJS('document.location.reload()')
-		self:RemovePreset(self.m_TestPreset1['Name'])
+		self:RemovePreset(self.m_TestPreset1['Name'], 1)
 	end
 		if InputManager:WentKeyDown(InputDeviceKeys.IDK_F6) then
 		-- WebUI:ExecuteJS('document.location.reload()')
@@ -110,10 +127,55 @@ function CinematicToolsClient:OnUpdateInput(p_Delta)
 
 end
 
-function CinematicToolsClient:LoadPresets()
+
+function CinematicToolsClient:LoadPreset(p_Preset, p_LerpTime)
+	print("Adding " .. p_Preset['Name'] )
+	self.m_LerpStart = {}
+	if(p_LerpTime ~= nil) then
+		self.m_LerpUpdate['time'] = p_LerpTime * 1000
+		self.m_LerpUpdate['startTime'] = SharedUtils:GetTimeMS()
+		self.m_LerpUpdate['name'] = p_Preset['Name']
+	end
+	if(self.m_Presets[p_Preset['Name']] == nil) then
+		self.m_Presets[p_Preset['Name']] = p_Preset
+	end
+
+	self.m_ActivePresets[p_Preset['Name']] = p_Preset
+	if(self.m_RemovedPresets[p_Preset['Name']] ~= nil) then
+		self.m_RemovedPresets[p_Preset['Name']] = nil
+	end
+	self:LoadPresets(p_LerpTime)
+end
+
+function CinematicToolsClient:RemovePreset(p_PresetName, p_LerpTime)
+	print("Removing " .. p_PresetName )
+	self.m_LerpStart = {}
+
+	if(p_LerpTime ~= nil) then
+		self.m_LerpUpdate['time'] = p_LerpTime * 1000
+		self.m_LerpUpdate['startTime'] = SharedUtils:GetTimeMS()
+		self.m_LerpUpdate['name'] = p_PresetName
+	end
+
+	self.m_ActivePresets[p_PresetName] = nil
+	self.m_RemovedPresets[p_PresetName] = self.m_Presets[p_PresetName]
+	self:LoadPresets(p_LerpTime)
+end
+
+
+function CinematicToolsClient:UpdateLerp(p_Delta)
+	for l_Class in pairs(self.m_LerpUpdate) do
+		if(l_Class ~= "time" and l_Class ~= "startTime" and l_Class ~= "name") then
+			for l_Field in pairs(self.m_LerpUpdate[l_Class]) do
+				self:OnUpdateValue(self.m_LerpUpdate[l_Class][l_Field], p_Delta)
+			end
+		end
+	end
+end	
+
+function CinematicToolsClient:LoadPresets(p_LerpTime)
 
 	print("Loading presets....")
-	print(self.m_Presets)
 	local s_States = VisualEnvironmentManager:GetStates()
 
 
@@ -129,7 +191,7 @@ function CinematicToolsClient:LoadPresets()
 			local s_Value = nil
 
 			local s_Priority = 0
-			for i, s_Preset in pairs(self.m_Presets) do
+			for i, s_Preset in pairs(self.m_ActivePresets) do
 				if( s_Preset['Priority'] ~= nil and
 					tonumber(s_Preset['Priority']) > s_Priority and
 					s_Preset[s_Class] ~= nil) and
@@ -140,13 +202,38 @@ function CinematicToolsClient:LoadPresets()
 			end
 			if s_Value ~= nil then
 				local s_Update = string.format("%s:%s:%s:%s", s_Class, s_Field, s_Type, tostring(s_Value))
-				self:OnUpdateValue(s_Update)
-				self:SendValue(s_Class, s_Field, s_Type, tostring(s_Value))
+				
+				--We're lerping, so we don't update the value right now.
+				if(p_LerpTime ~= nil) then
+					if self.m_ActivePresets[self.m_LerpUpdate['name']] ~= nil and self.m_ActivePresets[self.m_LerpUpdate['name']][s_Class] ~= nil and self.m_ActivePresets[self.m_LerpUpdate['name']][s_Class][s_Field] ~= nil then
+						if self.m_LerpUpdate[s_Class] == nil then
+							self.m_LerpUpdate[s_Class] = {}
+						end
+						self.m_LerpUpdate[s_Class][s_Field] = s_Update
+					end
+				else
+
+					self:OnUpdateValue(s_Update)
+					self:SendValue(s_Class, s_Field, s_Type, tostring(s_Value))
+				end
 			else
 				if(self.m_Original[s_Class] ~= nil and self.m_Original[s_Class][s_Field] ~= nil) then
 					local s_Original = string.format("%s:%s:%s:%s", s_Class, s_Field, s_Type, tostring(self.m_Original[s_Class][s_Field]))
-					self:OnUpdateValue(s_Original)
-					self:SendValue(s_Class, s_Field, s_Type, tostring(self.m_Original[s_Class][s_Field]))
+				
+
+					--We're lerping, so we don't update the value right now.
+					if(p_LerpTime ~= nil) then
+						if self.m_RemovedPresets[self.m_LerpUpdate['name']] ~= nil and self.m_RemovedPresets[self.m_LerpUpdate['name']][s_Class] ~= nil and self.m_RemovedPresets[self.m_LerpUpdate['name']][s_Class][s_Field] ~= nil then
+
+							if self.m_LerpUpdate[s_Class] == nil then
+								self.m_LerpUpdate[s_Class] = {}
+							end
+							self.m_LerpUpdate[s_Class][s_Field] = s_Original
+						end
+					else
+						self:OnUpdateValue(s_Original)
+						self:SendValue(s_Class, s_Field, s_Type, tostring(self.m_Original[s_Class][s_Field]))
+					end
 				end
 			end
 		end
@@ -154,17 +241,6 @@ function CinematicToolsClient:LoadPresets()
 	
 end
 
-function CinematicToolsClient:LoadPreset(p_Preset)
-	print("Adding " .. p_Preset['Name'] )
-	self.m_Presets[p_Preset['Name']] = p_Preset
-	self:LoadPresets()
-end
-
-function CinematicToolsClient:RemovePreset(p_PresetName)
-	print("Removing " .. p_PresetName )
-	self.m_Presets[p_PresetName] = nil
-	self:LoadPresets()
-end
 
 function CinematicToolsClient:OnStateAdded(p_State)
 	-- Fix a newly added state (if needed).
@@ -311,7 +387,12 @@ function CinematicToolsClient:SendEnum(p_Enum)
 end
 
 -- TODO: Fix this. Looks pigdisgusting.
-function CinematicToolsClient:OnUpdateValue(p_Contents)
+function CinematicToolsClient:OnUpdateValue(p_Contents, p_LerpTime)
+	-- No lerp time specified, making changes instantly.
+	if(p_LerpTime == nil) then
+		p_LerpTime = 1
+	end
+
 	local s_fixedContents = string.gsub(p_Contents, "%(", "")
 	local s_fixedContents = string.gsub(s_fixedContents, "%)", "")
 	local s_fixedContents = string.gsub(s_fixedContents, ", ", ":")
@@ -323,52 +404,65 @@ function CinematicToolsClient:OnUpdateValue(p_Contents)
 	local s_Type = s_Content[3] -- Vec3
 	local s_Val = tostring(s_Content[4])
 
+
 	local s_States = VisualEnvironmentManager:GetStates()
 
 	for i, s_State in ipairs(s_States) do
 
 		if s_State.entityName ~= 'EffectEntity' then
-			local m_class = s_State[s_Class] --colorCorrection
-			if m_class ~= nil then
+			local m_Class = s_State[s_Class] --colorCorrection
+			if m_Class ~= nil then
+				local s_object = m_Class[s_Field] --colorCorrection Contrast
 
-
-				local s_object = m_class[s_Field] --colorCorrection Contrast
-
-				if(s_Type == "Float32") then
-					m_class[s_Field] = tonumber(s_Content[4])
+				if(self.m_LerpStart[s_Class] == nil) then
+					self.m_LerpStart[s_Class] = {}
 				end
+				
 				if(s_Type == "Boolean") then
 					if(s_Val == "true") then
-						m_class[s_Field] = true
+						m_Class[s_Field] = true
 					else
-						m_class[s_Field] = false
+						m_Class[s_Field] = false
 					end
 				end
+				if(s_Type == "Float32") then
+					if(self.m_LerpStart[s_Class][s_Field] == nil) then
+						self.m_LerpStart[s_Class][s_Field] = tonumber(m_Class[s_Field])
+					end
+					m_Class[s_Field] = lerp(self.m_LerpStart[s_Class][s_Field], tonumber(s_Content[4]), p_LerpTime)
+				end
 				if(s_Type == "Vec2") then -- Vec2
-					local s_Val1 = tonumber(s_Content[4]) --x
-					local s_Val2 = tonumber(s_Content[5]) --y
-					m_class[s_Field] = Vec2(s_Val1,s_Val2)
+					if(self.m_LerpStart[s_Class][s_Field] == nil) then
+						self.m_LerpStart[s_Class][s_Field] = Vec2(m_Class[s_Field].x, m_Class[s_Field].y)
+					end
+					local s_Val1 = lerp(self.m_LerpStart[s_Class][s_Field].x, tonumber(s_Content[4]), p_LerpTime)  --x
+					local s_Val2 = lerp(self.m_LerpStart[s_Class][s_Field].y, tonumber(s_Content[5]), p_LerpTime) --y
+					m_Class[s_Field] = Vec2(s_Val1,s_Val2)
 				end
 				if(s_Type == "Vec3") then -- Vec3
-
-					local s_Val1 = tonumber(s_Content[4]) --x
-					local s_Val2 = tonumber(s_Content[5]) --y
-					local s_Val3 = tonumber(s_Content[6]) --x
-					m_class[s_Field] = Vec3(s_Val1,s_Val2,s_Val3)
+					if(self.m_LerpStart[s_Class][s_Field] == nil) then
+						self.m_LerpStart[s_Class][s_Field] = Vec3(m_Class[s_Field].x, m_Class[s_Field].y,m_Class[s_Field].z)
+					end
+					local s_Val1 = lerp(self.m_LerpStart[s_Class][s_Field].x, tonumber(s_Content[4]), p_LerpTime) --x
+					local s_Val2 = lerp(self.m_LerpStart[s_Class][s_Field].y, tonumber(s_Content[5]), p_LerpTime) --y
+					local s_Val3 = lerp(self.m_LerpStart[s_Class][s_Field].z, tonumber(s_Content[6]), p_LerpTime) --x
+					m_Class[s_Field] = Vec3(s_Val1,s_Val2,s_Val3)
 				end
 				if(s_Type == "Vec4") then -- Vec4
-
-					local s_Val1 = tonumber(s_Content[4]) --x
-					local s_Val2 = tonumber(s_Content[5]) --y
-					local s_Val3 = tonumber(s_Content[6]) --x
-					local s_Val4 = tonumber(s_Content[7]) --x
-					m_class[s_Field] = Vec4(s_Val1,s_Val2,s_Val3,s_Val4)
+					if(self.m_LerpStart[s_Class][s_Field] == nil) then
+						self.m_LerpStart[s_Class][s_Field] = Vec4(m_Class[s_Field].x, m_Class[s_Field].y,m_Class[s_Field].z,m_Class[s_Field].w)
+					end
+					local s_Val1 = tonumber(lerp(self.m_LerpStart[s_Class][s_Field].x, tonumber(s_Content[4]), p_LerpTime)) --x
+					local s_Val2 = tonumber(lerp(self.m_LerpStart[s_Class][s_Field].y, tonumber(s_Content[5]), p_LerpTime)) --y
+					local s_Val3 = tonumber(lerp(self.m_LerpStart[s_Class][s_Field].z, tonumber(s_Content[6]), p_LerpTime)) --x
+					local s_Val4 = tonumber(lerp(self.m_LerpStart[s_Class][s_Field].w, tonumber(s_Content[7]), p_LerpTime)) --w
+					m_Class[s_Field] = Vec4(s_Val1,s_Val2,s_Val3,s_Val4)
 				end
 				if(s_Type == "Enum") then -- Enum
 
 					local s_Val = tonumber(s_Content[4])  -- Value
 					--print(s_Val)
-					m_class[s_Field] = s_Val
+					m_Class[s_Field] = s_Val
 				end
 
 			end
@@ -383,6 +477,24 @@ Utilities
 
 
 ]]
+
+function table.shallow_copy(t)
+  local t2 = {}
+  for k,v in pairs(t) do
+    t2[k] = v
+  end
+  return t2
+end
+
+
+function lerp(a,b,t)
+	if(a == b) then
+		return b
+	end
+	local res = a + (b - a) * t
+	return res
+	
+end
 
 function split(pString, pPattern)
 	local Table = {} -- NOTE: use {n = 0} in Lua-5.0
