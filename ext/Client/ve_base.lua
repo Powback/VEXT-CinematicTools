@@ -25,7 +25,7 @@ local table = [[
         "Enable": "false",
         "Brightness": "(1.000000, 1.000000, 1.000000)",
         "Contrast": "(1.000000, 1.000000, 1.000000)",
-        "Saturation": "(1.000000, 1.000000, 1.000000)",
+        "Saturation": "(0.000000, 0.000000, 0.000000)",
         "Hue": "0.0",
         "ColorGradingEnable": "false",
         "ColorGradingTexture": "sol.sol::detail::unique_usertype<VeniceEXT::Classes::Shared::DataContainer>: 40E3F4F0"
