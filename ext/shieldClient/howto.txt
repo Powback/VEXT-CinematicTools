@@ -1,0 +1,23 @@
+
+
+Okay, first we need to include the lua file you created.
+	ve_XP3test = require "XP3Test"
+	
+The name is the class of the LUA file.
+So XP3Test is XP3Test, not ve_XP3test
+You can call it whatever you want, but the "require" must match the name of the LUA file and class
+
+Then we need to load the preset
+	self.m_xp3test = json.decode(ve_XP3test:GetPreset())
+
+Then we need to select a button where we load the preset.
+	if InputManager:WentKeyDown(InputDeviceKeys.IDK_F4) then
+		-- WebUI:ExecuteJS('document.location.reload()')
+		self:LoadPreset(self.m_xp3test)
+	end
+	
+	
+So now, when you are ingame, press f4 to load the preset you saved.
+
+I want to add this to the ingame UI in the future, but I haven't found a good way to do it.
+
