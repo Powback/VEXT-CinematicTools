@@ -94,36 +94,18 @@ function CinematicToolsClient:OnUpdateInput(p_Delta, p_SimulationDelta)
 	end
 
 
-	if InputManager:WentKeyDown(InputDeviceKeys.IDK_F1) then
-		-- WebUI:ExecuteJS('document.location.reload()')
-		self:LoadPreset(self.m_TestPreset1, 1)
-	end
-
-	if InputManager:WentKeyDown(InputDeviceKeys.IDK_F2) then
+	if InputManager:WentKeyDown(InputDeviceKeys.IDK_F) then
 		WebUI:BringToFront()
 		WebUI:EnableMouse()
 		WebUI:Show()
 	end
 
-	if InputManager:WentKeyDown(InputDeviceKeys.IDK_F3) then
+	if InputManager:WentKeyDown(InputDeviceKeys.IDK_V) then
 		--WebUI:BringToFront()
 		WebUI:DisableMouse()
 		WebUI:Hide()
 	end
 
-	if InputManager:WentKeyDown(InputDeviceKeys.IDK_F4) then
-		-- WebUI:ExecuteJS('document.location.reload()')
-		self:LoadPreset(self.m_base, 1)
-	end
-
-	if InputManager:WentKeyDown(InputDeviceKeys.IDK_F5) then
-		-- WebUI:ExecuteJS('document.location.reload()')
-		self:RemovePreset(self.m_TestPreset1['Name'], 1)
-	end
-		if InputManager:WentKeyDown(InputDeviceKeys.IDK_F6) then
-		-- WebUI:ExecuteJS('document.location.reload()')
-		self:RemovePreset(self.m_base['Name'])
-	end
 
 end
 
@@ -164,13 +146,7 @@ end
 
 
 function CinematicToolsClient:UpdateLerp(p_Delta)
-	for l_Class in pairs(self.m_LerpUpdate) do
-		if(l_Class ~= "time" and l_Class ~= "startTime" and l_Class ~= "name") then
-			for l_Field in pairs(self.m_LerpUpdate[l_Class]) do
-				self:OnUpdateValue(self.m_LerpUpdate[l_Class][l_Field], p_Delta)
-			end
-		end
-	end
+	
 end	
 
 function CinematicToolsClient:LoadPresets(p_LerpTime)
@@ -468,7 +444,7 @@ function CinematicToolsClient:OnUpdateValue(p_Contents, p_LerpTime)
 			end
 		end
 	end
-	VisualEnvironmentManager.dirty = true
+	VisualEnvironmentManager:SetDirty(true)
 end
 --[[
 
