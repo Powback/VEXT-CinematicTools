@@ -1,8 +1,5 @@
 class 'CinematicToolsClient'
 json = require "json"
-ve_preset = require "ve_preset"
-ve_preset2 = require "ve_preset2"
-ve_base = require "ve_base"
 
 function CinematicToolsClient:__init()
 	print("Initializing CinematicToolsClient")
@@ -34,9 +31,6 @@ function CinematicToolsClient:RegisterVars()
 		"Tonemap",
 		"Vignette",
 		"Wind"}
-	self.m_TestPreset1 = json.decode(ve_preset:GetPreset())
-	self.m_TestPreset2 = json.decode(ve_preset2:GetPreset())
-	self.m_base = json.decode(ve_base:GetPreset())
 	self.m_Presets = {}
 	self.m_ActivePresets = {}
 	self.m_RemovedPresets = {}
