@@ -521,27 +521,28 @@ function UpdateCurrentPreset(p_PresetType) {
     m_FullPreset['Name'] = m_CurrentPreset['Name']
     m_FullPreset['Priority'] = m_CurrentPreset['Priority'];
 
-    var prefix =    'class "' + m_CurrentPreset['Name'] +'"\n' +
-                    'local table = [[\n';
+    var prefix = 'return [[\n';
 
-    var suffix = '\n]]\n\n\n' +
-        'function '+ m_CurrentPreset['Name'] +  ':GetPreset()\n' +
-        '  return table\n' +
-        'end\n' +
-        '\n' +
-        'return ' + m_CurrentPreset['Name'];
+    var suffix = '\n]]\n\n\n';
 
     $("#CurrentState").text(prefix);
 
     if(m_IsCombied) {
-        $("#CurrentState").text($("#CurrentState").text() + JSON.stringify(m_FullPreset, null, 4));
+        $("#CurrentState").text($("#CurrentState").text() + JSON.stringify(m_FullPreset, booleanFilter, 4));
     } else {
-        $("#CurrentState").text($("#CurrentState").text() + JSON.stringify(m_CurrentPreset, null, 4));
+        $("#CurrentState").text($("#CurrentState").text() + JSON.stringify(m_CurrentPreset, booleanFilter, 4));
     }
 
     $("#CurrentState").text($("#CurrentState").text() + suffix);
 }
 
+function booleanFilter(key, value) {
+  if (typeof value === 'boolean') {
+    return value.toString();
+  }
+
+  return value;
+}
 
 (function($) {
     $.fn.changeElementType = function(newType) {
