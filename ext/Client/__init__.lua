@@ -235,9 +235,8 @@ function CinematicToolsClient:FixEnvironmentState(p_State)
 		s_Class_lower = firstToLower(s_Class)
 
 		if p_State[s_Class_lower] == nil then
-			-- Causes a crash as of 30.01.2018
-			--local s_Data = self:CreateData(s_Class)
-			--p_State[s_Class_lower] = s_Data
+			local s_Data = self:CreateData(s_Class)
+			p_State[s_Class_lower] = s_Data
 		end
 
 		local s_State = p_State[s_Class_lower]
@@ -302,10 +301,9 @@ function CinematicToolsClient:CreateData(p_DataName)
 
 	-- We're crashing here.
 	local s_Data = _G[p_DataName .. "Data"]()
-
 	print("Created " .. p_DataName)
 
-	for _, field in ipairs(_G[p_DataName .. "ComponentData"].typeInfo.fields) do
+	for _, field in pairs(_G[p_DataName .. "ComponentData"].typeInfo.fields) do
 		local s_FixedName = field.name
         if(field.name == "End") then
           s_FixedName = "EndValue"
@@ -313,8 +311,6 @@ function CinematicToolsClient:CreateData(p_DataName)
 
         local s_Value = nil
         local s_Type = field.typeInfo.name
-
-
         
         if s_Type == "Float32" or s_Type == "Int" then
         	s_Value = 0;
@@ -331,12 +327,11 @@ function CinematicToolsClient:CreateData(p_DataName)
 			s_Value = nil
 		else
 			print("Unsupported type: " .. s_Type)
-			s_Value = 0
+			-- s_Value = 0
 		end
 
 		if(s_Value ~= nil) then
 	      	s_Data[firstToLower(s_FixedName)] = s_Value
-
 	    end
 	end
 	return s_Data
