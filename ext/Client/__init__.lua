@@ -48,6 +48,16 @@ function CinematicToolsClient:RegisterEvents()
 	self.m_OnUpdateInputEvent = Events:Subscribe('Client:UpdateInput', self, self.OnUpdateInput)
 	self.m_OnWebUIUpdateEvent = Events:Subscribe('CT:UpdateValue', self, self.OnUpdateValue)
 	self.m_OnWebUIUpdateEvent = Events:Subscribe('CT:SetKeyboard', self, self.OnSetKeyboard)
+	Events:Subscribe('Level:Destroy', self, self.OnLevelDestroyed)
+end
+
+function CinematicToolsClient:OnLevelDestroyed()
+	self.m_Presets = {}
+	self.m_ActivePresets = {}
+	self.m_RemovedPresets = {}
+	self.m_Original = {}
+	self.m_LerpUpdate = {}
+	self.m_LerpStart = {}
 end
 
 function CinematicToolsClient:OnSetKeyboard(p_Value)
