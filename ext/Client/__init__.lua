@@ -41,6 +41,7 @@ end
 
 
 function CinematicToolsClient:RegisterEvents()
+	Events:Subscribe('UpdateManager:Update', self, self.OnUpdateManager)
 
 	self.m_StateAddedEvent = Events:Subscribe('VE:StateAdded', self, self.OnStateAdded)
 	self.m_StateRemovedEvent = Events:Subscribe('VE:StateRemoved', self, self.OnStateRemoved)
@@ -82,22 +83,25 @@ function CinematicToolsClient:OnLoaded()
 	WebUI:Init()
 end
 
-
-function CinematicToolsClient:OnUpdateInput(p_Delta, p_SimulationDelta)
-
-	if(self.m_LerpUpdate['time'] ~= nil ) then
+function CinematicToolsClient:OnUpdateManager(p_Delta, p_Pass)
+	if p_Pass ~= UpdatePass.UpdatePass_PreSim then
+		return
+	end
+	
+	if self.m_LerpUpdate['time'] ~= nil then
 		
-		local TimeSinceStarted = SharedUtils:GetTimeMS() - self.m_LerpUpdate['startTime']
-		local PercentageComplete = TimeSinceStarted / self.m_LerpUpdate['time']
-		self:UpdateLerp(PercentageComplete)
-		if(PercentageComplete >= 1) then
+		local m_TimeSinceStarted = SharedUtils:GetTimeMS() - self.m_LerpUpdate['startTime']
+		local m_PercentageComplete = m_TimeSinceStarted / self.m_LerpUpdate['time']
+		self:UpdateLerp(m_PercentageComplete)
+		if m_PercentageComplete >= 1 then
 			self.m_LerpUpdate = {}
 			self.m_LerpStart = {}
 			return
 		end
 	end
+end
 
-
+function CinematicToolsClient:OnUpdateInput(p_Delta, p_SimulationDelta)
 	if InputManager:WentKeyDown(InputDeviceKeys.IDK_F) then
 		WebUI:BringToFront()
 		WebUI:EnableMouse()
@@ -109,8 +113,6 @@ function CinematicToolsClient:OnUpdateInput(p_Delta, p_SimulationDelta)
 		WebUI:DisableMouse()
 		WebUI:Hide()
 	end
-
-
 end
 
 
@@ -322,7 +324,7 @@ function CinematicToolsClient:CreateData(p_DataName)
         local s_Value = nil
         local s_Type = field.typeInfo.name
         
-        if s_Type == "Float32" or s_Type == "Int" then
+        if self:IsNumberType(s_Type) then
         	s_Value = 0;
         elseif s_Type == "Vec2" then
         	s_Value = Vec2(0,0)
@@ -332,8 +334,12 @@ function CinematicToolsClient:CreateData(p_DataName)
 			s_Value = Vec4(0,0,0,0)
 		elseif s_Type == "Boolean" then
 			s_Value = false
-		elseif s_Type == "Realm" or 
-		s_Type == "TextureAsset" then
+		elseif s_Type == "Realm" then
+			s_Value = nil
+		elseif field.typeInfo.enum then
+			s_Value = 0;
+		elseif s_Type == "TextureAsset" then
+			--print('TextureAsset, setting value to nil')
 			s_Value = nil
 		else
 			print("Unsupported type: " .. s_Type)
@@ -341,10 +347,31 @@ function CinematicToolsClient:CreateData(p_DataName)
 		end
 
 		if(s_Value ~= nil) then
-	      	s_Data[firstToLower(s_FixedName)] = s_Value
+			--print('Field name: '..tostring(field.name)..', type: '..tostring(s_Type)..', value: '..tostring(s_Value))
+			--print(firstToLower(s_FixedName))
+			--print(s_Data[firstToLower(s_FixedName)])  
+			s_Data[firstToLower(s_FixedName)] = s_Value
 	    end
 	end
 	return s_Data
+end
+
+function CinematicToolsClient:IsNumberType(typ)
+	if typ == "Float8" or
+		typ == "Float16" or
+		typ == "Float32" or
+		typ == "Float64" or
+		typ == "Int8" or
+		typ == "Int16" or
+		typ == "Int32" or
+		typ == "Int64" or
+		typ == "Uint8" or
+		typ == "Uint16" or
+		typ == "Uint32" or
+		typ == "Uint64" then
+		return true
+	end
+	return false
 end
 
 function CinematicToolsClient:SendEnum(p_Enum)
