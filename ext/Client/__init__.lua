@@ -246,10 +246,10 @@ function CinematicToolsClient:FixEnvironmentState(p_State)
 	for _,s_Class in pairs(self.m_SupportedClasses) do
 		s_Class_lower = firstToLower(s_Class)
 
-		if p_State[s_Class_lower] == nil then
-			local s_Data = self:CreateData(s_Class)
-			p_State[s_Class_lower] = s_Data
-		end
+		--if p_State[s_Class_lower] == nil then
+		--	local s_Data = self:CreateData(s_Class)
+		--	p_State[s_Class_lower] = s_Data
+		--end
 
 		local s_State = p_State[s_Class_lower]
 
